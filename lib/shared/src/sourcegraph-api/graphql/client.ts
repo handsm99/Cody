@@ -181,9 +181,6 @@ interface CodyClientConfig {
     // Whether the site admin allows this user to make use of Cody at all.
     codyEnabled: boolean
 
-    // Whether the site admin allows this user to make use of the Cody chat feature.
-    chatEnabled: boolean
-
     // Whether the site admin allows this user to make use of the Cody autocomplete feature.
     autoCompleteEnabled: boolean
 
@@ -1542,7 +1539,7 @@ export class ClientConfigSingleton {
     }
 
     public async setAuthStatus(authStatus: AuthStatus): Promise<void> {
-        this.isSignedIn = authStatus.authenticated && authStatus.isLoggedIn
+        this.isSignedIn = authStatus.authenticated
         if (this.isSignedIn) {
             await this.refreshConfig()
         } else {
@@ -1664,7 +1661,6 @@ export class ClientConfigSingleton {
 
         return graphqlClient.isCodyEnabled().then(isCodyEnabled => ({
             codyEnabled: isCodyEnabled.enabled,
-            chatEnabled: features.chat,
             autoCompleteEnabled: features.autoComplete,
             customCommandsEnabled: features.commands,
             attributionEnabled: features.attribution,

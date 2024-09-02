@@ -32,7 +32,6 @@ const dummyVSCodeAPI: VSCodeWrapper = {
                 ...defaultAuthStatus,
                 displayName: 'Tim Lucas',
                 avatarURL: 'https://avatars.githubusercontent.com/u/153?v=4',
-                isLoggedIn: true,
                 authenticated: true,
                 hasVerifiedEmail: true,
                 requiresVerifiedEmail: false,
@@ -40,7 +39,7 @@ const dummyVSCodeAPI: VSCodeWrapper = {
                 siteVersion: '5.1.0',
                 endpoint: 'https://example.com',
             },
-            configFeatures: { attribution: true, chat: true, serverSentModels: true },
+            configFeatures: { attribution: true, serverSentModels: true },
             workspaceFolderUris: [],
             isDotComUser: true,
         })
