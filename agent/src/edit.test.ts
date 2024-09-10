@@ -1,7 +1,11 @@
 import path from 'node:path'
-import { getDotComDefaultModels, modelsService } from '@sourcegraph/cody-shared'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { getDotComDefaultModels, modelsService, ps } from '@sourcegraph/cody-shared'
+import { afterAll, beforeAll } from 'vitest'
+import { describe, expect, it } from 'vitest'
+import type * as vscode from 'vscode'
+import { executeSmartApply } from '../../vscode/src/edit/smart-apply'
 import { TESTING_CREDENTIALS } from '../../vscode/src/testutils/testing-credentials'
+import { AgentFixupControls } from './AgentFixupControls'
 import { TestClient } from './TestClient'
 import { TestWorkspace } from './TestWorkspace'
 import { explainPollyError } from './explainPollyError'
@@ -49,6 +53,44 @@ describe('Edit', () => {
             explainPollyError
         )
     })
+
+    it('editCommands/code (having one file active apply to the other file)', async () => {
+        const initiallyActiveFileUri = workspace.file('src', 'sum.ts')
+        await client.openFile(initiallyActiveFileUri)
+
+        const fileToEditUri = workspace.file('src', 'a-new-file.ts')
+        const newDocument = { uri: fileToEditUri } as vscode.TextDocument
+
+        const fixupTask = await executeSmartApply({
+            configuration: {
+                id: 'test-task-id',
+                instruction: ps`Add a simple function`,
+                replacement: '',
+                document: newDocument,
+                model: undefined,
+                isNewFile: true,
+            },
+            source: 'chat',
+        })
+        const task = AgentFixupControls.serialize(fixupTask!)
+
+        const initiallyActiveFileLenses = client.codeLenses.get(initiallyActiveFileUri.toString()) ?? []
+        const fileToEditLenses = client.codeLenses.get(fileToEditUri.toString()) ?? []
+        expect(initiallyActiveFileLenses).toHaveLength(0)
+        expect(fileToEditLenses).toHaveLength(4)
+        expect(fileToEditLenses[0].command?.command).toBe('cody.fixup.codelens.accept')
+        await client.request('editTask/accept', { id: task.id })
+        const newContent = client.workspace.getDocument(fileToEditUri)?.content
+        expect(trimEndOfLine(newContent)).toMatchInlineSnapshot(
+            `
+                    "export function sum(c: number, b: number): number {
+                        /* CURSOR */
+                    }
+                    "
+                    `,
+            explainPollyError
+        )
+    }, 10000)
 
     it('editCommand/code (add prop types)', async () => {
         const uri = workspace.file('src', 'ChatColumn.tsx')
