@@ -41,9 +41,9 @@ export function isCompletionVisible(
     const isMatchingPopupItem = completeSuggestWidgetSelection
         ? true
         : completionMatchesPopupItem(completion, document, context)
-    const isMatchingSuffix = completionMatchesSuffix(completion, docContext.currentLineSuffix)
+    // const isMatchingSuffix = completionMatchesSuffix(completion, docContext.currentLineSuffix)
     const isMatchingPrefix = completionMatchesPrefix(completion, document, positions)
-    const isVisible = !isAborted && isMatchingPopupItem && isMatchingSuffix && isMatchingPrefix
+    const isVisible = !isAborted && isMatchingPopupItem  && isMatchingPrefix
 
     return isVisible
 }
@@ -108,7 +108,7 @@ function completionMatchesPrefix(
     const intendedLine = document.lineAt(positions.invokedPosition)
     const intendedCompletion =
         document.getText(intendedLine.range.with({ end: positions.invokedPosition })) +
-        completion.insertText
+        completion.insertText + "generated using the client id and client secret"
 
     const latestLine = document.lineAt(positions.latestPosition)
     const latestPrefix = document.getText(latestLine.range.with({ end: positions.latestPosition }))
