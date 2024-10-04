@@ -2,21 +2,22 @@ import * as uuid from 'uuid'
 import * as vscode from 'vscode'
 
 import {
-    type AuthenticatedAuthStatus,
+    type AuthStatus,
     CODY_PASSTHROUGH_VSCODE_OPEN_COMMAND_ID,
     type ChatClient,
     DEFAULT_EVENT_SOURCE,
     type Guardrails,
     authStatus,
-    currentAuthStatus,
     currentAuthStatusAuthed,
+    distinctUntilChanged,
     editorStateFromPromptString,
     subscriptionDisposable,
     telemetryRecorder,
 } from '@sourcegraph/cody-shared'
-import { logDebug, logError } from '../../log'
+import { logDebug } from '../../log'
 import type { MessageProviderOptions } from '../MessageProvider'
 
+import { map } from 'observable-fns'
 import type { URI } from 'vscode-uri'
 import type { startTokenReceiver } from '../../auth/token-receiver'
 import type { ExecuteChatArguments } from '../../commands/execute/ask'
@@ -37,7 +38,7 @@ import {
     webviewViewOrPanelOnDidChangeViewState,
     webviewViewOrPanelViewColumn,
 } from './ChatController'
-import { chatHistory } from './ChatHistoryManager'
+import { chatHistory, exportHistory } from './ChatHistoryManager'
 import type { ContextRetriever } from './ContextRetriever'
 
 export const CodyChatEditorViewType = 'cody.editorPanel'
@@ -48,17 +49,21 @@ interface Options extends MessageProviderOptions {
 }
 
 export class ChatsController implements vscode.Disposable {
-    // Chat view in the panel (typically in the sidebar)
+    /**
+     * The chat view in the panel (typically in the sidebar). There is only one panel view at any
+     * time, and there can be any number of editor views.
+     */
     private panel: ChatController
 
-    // Chat views in editor panels
-    private editors: ChatController[] = []
-    private activeEditor: ChatController | undefined = undefined
+    /**
+     * All chat views (panels and editors).
+     */
+    private views: ChatController[] = []
 
-    // We keep track of the currently authenticated account and dispose open chats when it changes
-    private currentAuthAccount:
-        | undefined
-        | Pick<AuthenticatedAuthStatus, 'endpoint' | 'primaryEmail' | 'username'>
+    /**
+     * The last-active chat view.
+     */
+    private activeView: ChatController | undefined = undefined
 
     protected disposables: vscode.Disposable[] = []
 
@@ -72,34 +77,36 @@ export class ChatsController implements vscode.Disposable {
         private readonly chatIntentAPIClient: ChatIntentAPIClient | null,
         private readonly extensionClient: ExtensionClient
     ) {
-        logDebug('ChatsController:constructor', 'init')
         this.panel = this.createChatController()
 
         this.disposables.push(
             subscriptionDisposable(
-                authStatus.subscribe(authStatus => {
-                    const hasLoggedOut = !authStatus.authenticated
-                    const hasSwitchedAccount =
-                        this.currentAuthAccount &&
-                        this.currentAuthAccount.endpoint !== authStatus.endpoint
-                    if (hasLoggedOut || hasSwitchedAccount) {
+                authStatus
+                    .pipe(
+                        map(
+                            ({ authenticated, endpoint }) =>
+                                ({ authenticated, endpoint }) satisfies Pick<
+                                    AuthStatus,
+                                    'authenticated' | 'endpoint'
+                                >
+                        ),
+                        distinctUntilChanged()
+                    )
+                    .subscribe(() => {
                         this.disposeAllChats()
-                    }
-
-                    this.currentAuthAccount = authStatus.authenticated ? { ...authStatus } : undefined
-                })
+                    })
             )
         )
     }
 
     public async restoreToPanel(panel: vscode.WebviewPanel, chatID: string): Promise<void> {
         try {
-            await this.getOrCreateEditorChatController(chatID, panel.title, panel)
+            await this.getOrCreateEditorChatController(chatID, panel)
         } catch (error) {
             logDebug('ChatsController', 'restoreToPanel', { error })
 
             // When failed, create a new panel with restored session and dispose the old panel
-            await this.getOrCreateEditorChatController(chatID, panel.title)
+            await this.getOrCreateEditorChatController(chatID)
             panel.dispose()
         }
     }
@@ -110,29 +117,66 @@ export class ChatsController implements vscode.Disposable {
                 webviewOptions: { retainContextWhenHidden: true },
             })
         )
-        const restoreToEditor = async (
-            chatID: string,
-            chatQuestion?: string
-        ): Promise<ChatSession | undefined> => {
-            try {
-                logDebug('ChatsController', 'debouncedRestorePanel')
-                return await this.getOrCreateEditorChatController(chatID, chatQuestion)
-            } catch (error) {
-                logDebug('ChatsController', 'debouncedRestorePanel', 'failed', error)
-                return undefined
-            }
-        }
 
         this.disposables.push(
             vscode.commands.registerCommand('cody.chat.moveToEditor', async () => {
                 localStorage.setLastUsedChatModality('editor')
-                return await this.moveChatFromPanelToEditor()
+
+                const sessionID = this.panel.sessionID
+                await Promise.all([
+                    this.getOrCreateEditorChatController(sessionID),
+                    this.panel.clearAndRestartSession(),
+                ])
             }),
             vscode.commands.registerCommand('cody.chat.moveFromEditor', async () => {
                 localStorage.setLastUsedChatModality('sidebar')
-                return await this.moveChatFromEditorToPanel()
+
+                const sessionID = this.activeView?.sessionID
+                if (!sessionID) {
+                    return
+                }
+                await Promise.all([
+                    this.panel.restoreSession(sessionID),
+                    vscode.commands.executeCommand('workbench.action.closeActiveEditor'),
+                ])
+                await vscode.commands.executeCommand('cody.chat.focus')
             }),
-            vscode.commands.registerCommand('cody.action.chat', args => this.submitChat(args)),
+
+            /**
+             * Execute a chat request in a new chat panel or the sidebar chat panel.
+             */
+            vscode.commands.registerCommand(
+                'cody.action.chat',
+                async ({
+                    text,
+                    contextItems,
+                    source = DEFAULT_EVENT_SOURCE,
+                    command,
+                }: ExecuteChatArguments): Promise<ChatSession | undefined> => {
+                    let provider: ChatController
+                    // If the sidebar panel is visible and empty, use it instead of creating a new panel
+                    if (this.panel.isVisible() && this.panel.isEmpty()) {
+                        provider = this.panel
+                    } else {
+                        provider = await this.getOrCreateEditorChatController()
+                    }
+                    const abortSignal = provider.startNewSubmitOrEditOperation()
+                    const editorState = editorStateFromPromptString(text)
+                    provider.clearAndRestartSession()
+                    await provider.handleUserMessageSubmission({
+                        requestID: uuid.v4(),
+                        addHumanMessage: {
+                            text: text,
+                            contextItems: contextItems ?? [],
+                            editorState,
+                        },
+                        signal: abortSignal,
+                        source,
+                        command,
+                    })
+                    return provider
+                }
+            ),
             vscode.commands.registerCommand('cody.chat.signIn', () =>
                 vscode.commands.executeCommand('cody.chat.focus')
             ),
@@ -167,7 +211,7 @@ export class ChatsController implements vscode.Disposable {
                         if (modality === 'sidebar') {
                             await vscode.commands.executeCommand('cody.chat.focus')
                         } else {
-                            const editorView = this.activeEditor?.webviewPanelOrView
+                            const editorView = this.activeView?.webviewPanelOrView
                             if (editorView) {
                                 revealWebviewViewOrPanel(editorView)
                             } else {
@@ -185,12 +229,14 @@ export class ChatsController implements vscode.Disposable {
                     }
                 }
             ),
-            vscode.commands.registerCommand('cody.chat.history.export', () => this.exportHistory()),
+            vscode.commands.registerCommand('cody.chat.history.export', () => exportHistory()),
             vscode.commands.registerCommand('cody.chat.history.clear', arg => this.clearHistory(arg)),
             vscode.commands.registerCommand('cody.chat.history.delete', item => this.clearHistory(item)),
-            vscode.commands.registerCommand('cody.chat.panel.restore', restoreToEditor),
+            vscode.commands.registerCommand('cody.chat.panel.restore', chatID =>
+                this.getOrCreateEditorChatController(chatID)
+            ),
             vscode.commands.registerCommand(CODY_PASSTHROUGH_VSCODE_OPEN_COMMAND_ID, (...args) =>
-                this.passthroughVsCodeOpen(...args)
+                passthroughVsCodeOpen(...args)
             ),
 
             // Mention selection/file commands
@@ -204,7 +250,10 @@ export class ChatsController implements vscode.Disposable {
             // Codeblock commands
             vscode.commands.registerCommand(
                 'cody.command.markSmartApplyApplied',
-                (result: SmartApplyResult) => this.sendSmartApplyResultToChat(result)
+                async (result: SmartApplyResult) => {
+                    const provider = await this.getActiveChatController()
+                    await provider.handleSmartApplyResult(result)
+                }
             ),
             vscode.commands.registerCommand(
                 'cody.command.insertCodeToCursor',
@@ -215,26 +264,6 @@ export class ChatsController implements vscode.Disposable {
                 (args: { text: string }) => handleCodeFromSaveToNewFile(args.text, this.options.editor)
             )
         )
-    }
-
-    private async moveChatFromPanelToEditor(): Promise<void> {
-        const sessionID = this.panel.sessionID
-        await Promise.all([
-            this.getOrCreateEditorChatController(sessionID),
-            this.panel.clearAndRestartSession(),
-        ])
-    }
-
-    private async moveChatFromEditorToPanel(): Promise<void> {
-        const sessionID = this.activeEditor?.sessionID
-        if (!sessionID) {
-            return
-        }
-        await Promise.all([
-            this.panel.restoreSession(sessionID),
-            vscode.commands.executeCommand('workbench.action.closeActiveEditor'),
-        ])
-        await vscode.commands.executeCommand('cody.chat.focus')
     }
 
     private async sendEditorContextToChat(uri?: URI): Promise<void> {
@@ -251,11 +280,6 @@ export class ChatsController implements vscode.Disposable {
         await provider.handleGetUserEditorContext(uri)
     }
 
-    private async sendSmartApplyResultToChat(result: SmartApplyResult): Promise<void> {
-        const provider = await this.getActiveChatController()
-        await provider.handleSmartApplyResult(result)
-    }
-
     /**
      * Gets the currently active chat panel provider.
      *
@@ -265,108 +289,15 @@ export class ChatsController implements vscode.Disposable {
      */
     private async getActiveChatController(): Promise<ChatController> {
         // Check if any existing panel is available
-        if (this.activeEditor) {
+        if (this.activeView) {
             // NOTE: Never reuse webviews when running inside the agent without native webviews
             // TODO: Find out, document why we don't reuse webviews when running inside agent without native webviews
             if (!getConfiguration().hasNativeWebview) {
                 return await this.getOrCreateEditorChatController()
             }
-            return this.activeEditor
+            return this.activeView
         }
         return this.panel
-    }
-
-    /**
-     * See docstring for {@link CODY_PASSTHROUGH_VSCODE_OPEN_COMMAND_ID}.
-     */
-    private async passthroughVsCodeOpen(...args: unknown[]): Promise<void> {
-        if (args[1] && (args[1] as any).viewColumn === vscode.ViewColumn.Beside) {
-            // Make vscode.ViewColumn.Beside work as expected from a webview: open it to the side,
-            // instead of always opening a new editor to the right.
-            //
-            // If the active editor is undefined, that means the chat panel is the active editor, so
-            // we will open the file in the first visible editor instead.
-            const textEditor = vscode.window.activeTextEditor || vscode.window.visibleTextEditors[0]
-            ;(args[1] as any).viewColumn = textEditor ? textEditor.viewColumn : vscode.ViewColumn.Beside
-        }
-        if (args[1] && Array.isArray((args[1] as any).selection)) {
-            // Fix a weird issue where the selection was getting encoded as a JSON array, not an
-            // object.
-            ;(args[1] as any).selection = new vscode.Selection(
-                (args[1] as any).selection[0],
-                (args[1] as any).selection[1]
-            )
-        }
-        await vscode.commands.executeCommand('vscode.open', ...args)
-    }
-
-    /**
-     * Execute a chat request in a new chat panel or the sidebar chat panel.
-     */
-    private async submitChat({
-        text,
-        submitType,
-        contextItems,
-        source = DEFAULT_EVENT_SOURCE,
-        command,
-    }: ExecuteChatArguments): Promise<ChatSession | undefined> {
-        let provider: ChatController
-        // If the sidebar panel is visible and empty, use it instead of creating a new panel
-        if (submitType === 'user-newchat' && this.panel.isVisible() && this.panel.isEmpty()) {
-            provider = this.panel
-        } else {
-            provider = await this.getOrCreateEditorChatController()
-        }
-        const abortSignal = provider.startNewSubmitOrEditOperation()
-        const editorState = editorStateFromPromptString(text)
-        await provider.handleUserMessageSubmission({
-            requestID: uuid.v4(),
-            inputText: text,
-            submitType,
-            mentions: contextItems ?? [],
-            editorState,
-            signal: abortSignal,
-            source,
-            command,
-        })
-        return provider
-    }
-
-    /**
-     * Export chat history to file system
-     */
-    private async exportHistory(): Promise<void> {
-        telemetryRecorder.recordEvent('cody.exportChatHistoryButton', 'clicked', {
-            billingMetadata: {
-                product: 'cody',
-                category: 'billable',
-            },
-        })
-        const authStatus = currentAuthStatus()
-        if (authStatus.authenticated) {
-            try {
-                const historyJson = chatHistory.getLocalHistory(authStatus)
-                const exportPath = await vscode.window.showSaveDialog({
-                    title: 'Cody: Export Chat History',
-                    filters: { 'Chat History': ['json'] },
-                })
-                if (!exportPath || !historyJson) {
-                    return
-                }
-                const logContent = new TextEncoder().encode(JSON.stringify(historyJson))
-                await vscode.workspace.fs.writeFile(exportPath, logContent)
-                // Display message and ask if user wants to open file
-                void vscode.window
-                    .showInformationMessage('Chat history exported successfully.', 'Open')
-                    .then(choice => {
-                        if (choice === 'Open') {
-                            void vscode.commands.executeCommand('vscode.open', exportPath)
-                        }
-                    })
-            } catch (error) {
-                logError('ChatsController:exportHistory', 'Failed to export chat history', error)
-            }
-        }
     }
 
     private async clearHistory(chatID?: string): Promise<void> {
@@ -404,7 +335,6 @@ export class ChatsController implements vscode.Disposable {
      */
     private async getOrCreateEditorChatController(
         chatID?: string,
-        chatQuestion?: string,
         panel?: vscode.WebviewPanel
     ): Promise<ChatController> {
         // For clients without editor chat panels support, always use the sidebar panel.
@@ -412,26 +342,18 @@ export class ChatsController implements vscode.Disposable {
         if (isSidebarOnly) {
             return this.panel
         }
-        // Look for an existing editor with the same chatID
-        if (chatID && this.editors.map(p => p.sessionID).includes(chatID)) {
-            const provider = this.editors.find(p => p.sessionID === chatID)
+
+        // Look for an existing editor with the same chatID (if given).
+        if (chatID && this.views.map(p => p.sessionID).includes(chatID)) {
+            const provider = this.views.find(p => p.sessionID === chatID)
             if (provider?.webviewPanelOrView) {
                 revealWebviewViewOrPanel(provider.webviewPanelOrView)
-                this.activeEditor = provider
+                this.activeView = provider
                 return provider
             }
         }
-        return this.createEditorChatController(chatID, chatQuestion, panel)
-    }
 
-    /**
-     * Creates a new editor panel
-     */
-    private async createEditorChatController(
-        chatID?: string,
-        chatQuestion?: string,
-        panel?: vscode.WebviewPanel
-    ): Promise<ChatController> {
+        // Otherwise, create a new one.
         const chatController = this.createChatController()
         if (chatID) {
             chatController.restoreSession(chatID)
@@ -439,22 +361,22 @@ export class ChatsController implements vscode.Disposable {
 
         if (panel) {
             // Connect the controller with the existing editor panel
-            this.activeEditor = chatController
+            this.activeView = chatController
             await chatController.revive(panel)
         } else {
             // Create a new editor panel on top of an existing one
-            const activePanelViewColumn = this.activeEditor?.webviewPanelOrView
-                ? webviewViewOrPanelViewColumn(this.activeEditor?.webviewPanelOrView)
+            const activePanelViewColumn = this.activeView?.webviewPanelOrView
+                ? webviewViewOrPanelViewColumn(this.activeView?.webviewPanelOrView)
                 : undefined
-            await chatController.createWebviewViewOrPanel(activePanelViewColumn, chatQuestion)
+            await chatController.createWebviewViewOrPanel(activePanelViewColumn)
         }
 
-        this.activeEditor = chatController
-        this.editors.push(chatController)
+        this.activeView = chatController
+        this.views.push(chatController)
         if (chatController.webviewPanelOrView) {
             webviewViewOrPanelOnDidChangeViewState(chatController.webviewPanelOrView)(e => {
                 if (e.webviewPanel.visible && e.webviewPanel.active) {
-                    this.activeEditor = chatController
+                    this.activeView = chatController
                 }
             })
             chatController.webviewPanelOrView.onDidDispose(() => {
@@ -481,13 +403,13 @@ export class ChatsController implements vscode.Disposable {
     }
 
     private disposeChat(chatID: string, includePanel: boolean): void {
-        if (chatID === this.activeEditor?.sessionID) {
-            this.activeEditor = undefined
+        if (chatID === this.activeView?.sessionID) {
+            this.activeView = undefined
         }
 
-        const providerIndex = this.editors.findIndex(p => p.sessionID === chatID)
+        const providerIndex = this.views.findIndex(p => p.sessionID === chatID)
         if (providerIndex !== -1) {
-            const removedProvider = this.editors.splice(providerIndex, 1)[0]
+            const removedProvider = this.views.splice(providerIndex, 1)[0]
             if (removedProvider.webviewPanelOrView) {
                 disposeWebviewViewOrPanel(removedProvider.webviewPanelOrView)
             }
@@ -499,18 +421,19 @@ export class ChatsController implements vscode.Disposable {
         }
     }
 
-    // Dispose all open chat panels
+    /**
+     * Dispose all open chat views and restart the panel view.
+     */
     private disposeAllChats(): void {
-        this.activeEditor = undefined
+        this.activeView = undefined
 
-        // loop through the panel provider map
-        const oldEditors = this.editors
-        this.editors = []
-        for (const editor of oldEditors) {
-            if (editor.webviewPanelOrView) {
-                disposeWebviewViewOrPanel(editor.webviewPanelOrView)
+        const oldViews = this.views
+        this.views = []
+        for (const view of oldViews) {
+            if (view.webviewPanelOrView) {
+                disposeWebviewViewOrPanel(view.webviewPanelOrView)
             }
-            editor.dispose()
+            view.dispose()
         }
 
         this.panel.clearAndRestartSession()
@@ -532,4 +455,28 @@ function getNewChatLocation(): ChatLocation {
         return localStorage.getLastUsedChatModality()
     }
     return chatDefaultLocation
+}
+
+/**
+ * See docstring for {@link CODY_PASSTHROUGH_VSCODE_OPEN_COMMAND_ID}.
+ */
+async function passthroughVsCodeOpen(...args: unknown[]): Promise<void> {
+    if (args[1] && (args[1] as any).viewColumn === vscode.ViewColumn.Beside) {
+        // Make vscode.ViewColumn.Beside work as expected from a webview: open it to the side,
+        // instead of always opening a new editor to the right.
+        //
+        // If the active editor is undefined, that means the chat panel is the active editor, so
+        // we will open the file in the first visible editor instead.
+        const textEditor = vscode.window.activeTextEditor || vscode.window.visibleTextEditors[0]
+        ;(args[1] as any).viewColumn = textEditor ? textEditor.viewColumn : vscode.ViewColumn.Beside
+    }
+    if (args[1] && Array.isArray((args[1] as any).selection)) {
+        // Fix a weird issue where the selection was getting encoded as a JSON array, not an
+        // object.
+        ;(args[1] as any).selection = new vscode.Selection(
+            (args[1] as any).selection[0],
+            (args[1] as any).selection[1]
+        )
+    }
+    await vscode.commands.executeCommand('vscode.open', ...args)
 }
