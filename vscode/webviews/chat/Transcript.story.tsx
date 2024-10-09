@@ -36,6 +36,7 @@ const meta: Meta<typeof Transcript> = {
         userInfo: FIXTURE_USER_ACCOUNT_INFO,
         postMessage: () => {},
         chatEnabled: true,
+        updateEditorStateOnChange: () => {},
     } satisfies ComponentProps<typeof Transcript>,
 
     decorators: [
