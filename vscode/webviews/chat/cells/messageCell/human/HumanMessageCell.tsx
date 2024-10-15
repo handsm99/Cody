@@ -1,6 +1,5 @@
 import {
     type ChatMessage,
-    type Model,
     type SerializedPromptEditorState,
     type SerializedPromptEditorValue,
     serializedPromptEditorStateFromChatMessage,
@@ -20,7 +19,6 @@ import { useConfig } from '../../../../utils/useConfig'
 
 interface HumanMessageCellProps {
     message: ChatMessage
-    models: Model[]
     userInfo: UserAccountInfo
     chatEnabled: boolean
 
@@ -53,12 +51,10 @@ interface HumanMessageCellProps {
  * A component that displays a chat message from the human.
  */
 export const HumanMessageCell: FC<HumanMessageCellProps> = ({ message, ...otherProps }) => {
-    const messageJSON = JSON.stringify(message)
-
-    const initialEditorState = useMemo(
-        () => serializedPromptEditorStateFromChatMessage(JSON.parse(messageJSON)),
-        [messageJSON]
-    )
+    // biome-ignore lint/correctness/useExhaustiveDependencies: initial value is memoized
+    const initialEditorState = useMemo(() => {
+        return serializedPromptEditorStateFromChatMessage(message)
+    }, [])
 
     return <HumanMessageCellContent {...otherProps} initialEditorState={initialEditorState} />
 }
@@ -69,7 +65,6 @@ type HumanMessageCellContent = { initialEditorState: SerializedPromptEditorState
 >
 const HumanMessageCellContent = memo<HumanMessageCellContent>(props => {
     const {
-        models,
         initialEditorState,
         userInfo,
         chatEnabled = true,
@@ -101,7 +96,6 @@ const HumanMessageCellContent = memo<HumanMessageCellContent>(props => {
             cellAction={isFirstMessage && <OpenInNewEditorAction />}
             content={
                 <HumanMessageEditor
-                    models={models}
                     userInfo={userInfo}
                     initialEditorState={initialEditorState}
                     placeholder={isFirstMessage ? 'Ask...' : 'Ask a followup...'}
