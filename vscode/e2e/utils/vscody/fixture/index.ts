@@ -13,6 +13,7 @@ import { vscodeFixture } from './vscode'
 
 export interface WorkerContext {
     validWorkerOptions: WorkerOptions
+    gitconfigPath: string
 }
 export type Directory = string
 export interface TestContext {
@@ -30,6 +31,9 @@ export interface TestContext {
     mitmProxy: MitMProxy
     //sourcegraphMitM: { endpoint: string; target: string }
     workspaceDir: Directory
+    platformTags: {
+        platform: NodeJS.Platform
+    }
 }
 
 export const fixture = mergeTests(

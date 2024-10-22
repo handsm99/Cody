@@ -44,10 +44,10 @@ export async function gitInit(
     // that.
     if (args.origin !== null) {
         commands.push(
-            `git remote add origin ${args.origin ?? 'https://github.com/sourcegraph/sourcegraph'}`
+            `git remote add origin ${args.origin ?? 'https://github.com/sourcegraph/sourcegraph.git'}`
         )
     }
     const combinedCommands = commands.join(' && ')
 
-    await promisify(exec)(combinedCommands, { cwd: workspaceDir })
+    await promisify(exec)(combinedCommands, { cwd: workspaceDir, env: process.env })
 }

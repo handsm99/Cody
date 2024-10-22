@@ -21,7 +21,7 @@ log:
           - name: accept
             value: "*/*"
           - name: user-agent
-            value: vscode/1.38.1 (Node.js v20.16.0)
+            value: vscode/1.38.2 (Node.js v20.16.0)
           - name: content-type
             value: application/json; charset=utf-8
           - name: authorization
@@ -55,7 +55,7 @@ log:
         cookies: []
         headers:
           - name: date
-            value: Thu, 17 Oct 2024 16:07:42 GMT
+            value: Tue, 22 Oct 2024 19:47:33 GMT
           - name: content-type
             value: text/plain; charset=utf-8
           - name: content-length
@@ -68,6 +68,10 @@ log:
             value: ""
           - name: cache-control
             value: no-cache, max-age=0
+          - name: observed-calculated-ip-from-forwarded-for
+            value: 84.234.244.244
+          - name: observed-x-forwarded-for
+            value: 84.234.244.244
           - name: vary
             value: Cookie,Accept-Encoding,Authorization,Cookie, Authorization,
               X-Requested-With,Cookie
@@ -79,13 +83,13 @@ log:
             value: 1; mode=block
           - name: strict-transport-security
             value: max-age=31536000; includeSubDomains; preload
-        headersSize: 1306
+        headersSize: 1407
         httpVersion: HTTP/1.1
         redirectURL: ""
         status: 200
         statusText: OK
-      startedDateTime: 2024-10-17T16:07:42.113Z
-      time: 233
+      startedDateTime: 2024-10-22T19:47:32.754Z
+      time: 262
       timings:
         blocked: -1
         connect: -1
@@ -93,7 +97,7 @@ log:
         receive: 0
         send: 0
         ssl: -1
-        wait: 233
+        wait: 262
     - _id: 28c346c4c160958f92e8f989a1737e5e
       _order: 0
       cache: {}
@@ -112,7 +116,7 @@ log:
           - name: accept
             value: "*/*"
           - name: user-agent
-            value: vscode/1.38.1 (Node.js v20.16.0)
+            value: vscode/1.38.2 (Node.js v20.16.0)
           - name: content-type
             value: application/json; charset=utf-8
           - name: authorization
@@ -149,23 +153,23 @@ log:
             value: null
         url: https://sourcegraph.com/.api/graphql?CurrentSiteCodyLlmConfiguration
       response:
-        bodySize: 282
+        bodySize: 289
         content:
           mimeType: application/json
-          size: 282
+          size: 289
           text: "{\"data\":{\"site\":{\"codyLLMConfiguration\":{\"chatModel\":\"sourcegra\
-            ph/claude-3.5-sonnet\",\"chatModelMaxTokens\":45000,\"fastChatModel\
-            \":\"sourcegraph/claude-3-haiku\",\"fastChatModelMaxTokens\":7000,\
-            \"completionModel\":\"sourcegraph/deepseek-coder-v2-lite-base\",\"c\
-            ompletionModelMaxTokens\":2048}}}}"
+            ph/claude-3-5-sonnet-latest\",\"chatModelMaxTokens\":45000,\"fastCh\
+            atModel\":\"sourcegraph/claude-3-haiku\",\"fastChatModelMaxTokens\"\
+            :7000,\"completionModel\":\"sourcegraph/deepseek-coder-v2-lite-base\
+            \",\"completionModelMaxTokens\":2048}}}}"
         cookies: []
         headers:
           - name: date
-            value: Thu, 17 Oct 2024 16:07:42 GMT
+            value: Tue, 22 Oct 2024 19:47:32 GMT
           - name: content-type
             value: application/json
           - name: content-length
-            value: "282"
+            value: "289"
           - name: connection
             value: close
           - name: access-control-allow-credentials
@@ -174,6 +178,10 @@ log:
             value: ""
           - name: cache-control
             value: no-cache, max-age=0
+          - name: observed-calculated-ip-from-forwarded-for
+            value: 84.234.244.244
+          - name: observed-x-forwarded-for
+            value: 84.234.244.244
           - name: vary
             value: Cookie,Accept-Encoding,Authorization,Cookie, Authorization,
               X-Requested-With,Cookie
@@ -185,13 +193,13 @@ log:
             value: 1; mode=block
           - name: strict-transport-security
             value: max-age=31536000; includeSubDomains; preload
-        headersSize: 1437
+        headersSize: 1538
         httpVersion: HTTP/1.1
         redirectURL: ""
         status: 200
         statusText: OK
-      startedDateTime: 2024-10-17T16:07:41.880Z
-      time: 244
+      startedDateTime: 2024-10-22T19:47:32.428Z
+      time: 266
       timings:
         blocked: -1
         connect: -1
@@ -199,7 +207,7 @@ log:
         receive: 0
         send: 0
         ssl: -1
-        wait: 244
+        wait: 266
     - _id: a4d641ac3093a4efbffe59352b351757
       _order: 0
       cache: {}
@@ -218,7 +226,7 @@ log:
           - name: accept
             value: "*/*"
           - name: user-agent
-            value: vscode/1.38.1 (Node.js v20.16.0)
+            value: vscode/1.38.2 (Node.js v20.16.0)
           - name: content-type
             value: application/json; charset=utf-8
           - name: authorization
@@ -259,7 +267,7 @@ log:
         cookies: []
         headers:
           - name: date
-            value: Thu, 17 Oct 2024 16:07:42 GMT
+            value: Tue, 22 Oct 2024 19:47:32 GMT
           - name: content-type
             value: application/json
           - name: content-length
@@ -272,6 +280,10 @@ log:
             value: ""
           - name: cache-control
             value: no-cache, max-age=0
+          - name: observed-calculated-ip-from-forwarded-for
+            value: 84.234.244.244
+          - name: observed-x-forwarded-for
+            value: 84.234.244.244
           - name: vary
             value: Cookie,Accept-Encoding,Authorization,Cookie, Authorization,
               X-Requested-With,Cookie
@@ -283,13 +295,13 @@ log:
             value: 1; mode=block
           - name: strict-transport-security
             value: max-age=31536000; includeSubDomains; preload
-        headersSize: 1436
+        headersSize: 1537
         httpVersion: HTTP/1.1
         redirectURL: ""
         status: 200
         statusText: OK
-      startedDateTime: 2024-10-17T16:07:41.882Z
-      time: 233
+      startedDateTime: 2024-10-22T19:47:32.435Z
+      time: 362
       timings:
         blocked: -1
         connect: -1
@@ -297,7 +309,7 @@ log:
         receive: 0
         send: 0
         ssl: -1
-        wait: 233
+        wait: 362
     - _id: 06568f66a76daea32430b82552305046
       _order: 0
       cache: {}
@@ -316,7 +328,7 @@ log:
           - name: accept
             value: "*/*"
           - name: user-agent
-            value: vscode/1.38.1 (Node.js v20.16.0)
+            value: vscode/1.38.2 (Node.js v20.16.0)
           - name: content-type
             value: application/json; charset=utf-8
           - name: authorization
@@ -357,7 +369,7 @@ log:
         cookies: []
         headers:
           - name: date
-            value: Thu, 17 Oct 2024 16:07:42 GMT
+            value: Tue, 22 Oct 2024 19:47:32 GMT
           - name: content-type
             value: application/json
           - name: content-length
@@ -370,6 +382,10 @@ log:
             value: ""
           - name: cache-control
             value: no-cache, max-age=0
+          - name: observed-calculated-ip-from-forwarded-for
+            value: 84.234.244.244
+          - name: observed-x-forwarded-for
+            value: 84.234.244.244
           - name: vary
             value: Cookie,Accept-Encoding,Authorization,Cookie, Authorization,
               X-Requested-With,Cookie
@@ -381,13 +397,13 @@ log:
             value: 1; mode=block
           - name: strict-transport-security
             value: max-age=31536000; includeSubDomains; preload
-        headersSize: 1436
+        headersSize: 1537
         httpVersion: HTTP/1.1
         redirectURL: ""
         status: 200
         statusText: OK
-      startedDateTime: 2024-10-17T16:07:41.881Z
-      time: 222
+      startedDateTime: 2024-10-22T19:47:32.429Z
+      time: 316
       timings:
         blocked: -1
         connect: -1
@@ -395,7 +411,7 @@ log:
         receive: 0
         send: 0
         ssl: -1
-        wait: 222
+        wait: 316
     - _id: d1e9e9d8ae116eb7e71823b775d35828
       _order: 0
       cache: {}
@@ -414,7 +430,7 @@ log:
           - name: accept
             value: "*/*"
           - name: user-agent
-            value: vscode/1.38.1 (Node.js v20.16.0)
+            value: vscode/1.38.2 (Node.js v20.16.0)
           - name: content-type
             value: application/json; charset=utf-8
           - name: authorization
@@ -470,7 +486,7 @@ log:
         cookies: []
         headers:
           - name: date
-            value: Thu, 17 Oct 2024 16:07:41 GMT
+            value: Tue, 22 Oct 2024 19:47:32 GMT
           - name: content-type
             value: application/json
           - name: content-length
@@ -483,6 +499,10 @@ log:
             value: ""
           - name: cache-control
             value: no-cache, max-age=0
+          - name: observed-calculated-ip-from-forwarded-for
+            value: 84.234.244.244
+          - name: observed-x-forwarded-for
+            value: 84.234.244.244
           - name: vary
             value: Cookie,Accept-Encoding,Authorization,Cookie, Authorization,
               X-Requested-With,Cookie
@@ -494,13 +514,13 @@ log:
             value: 1; mode=block
           - name: strict-transport-security
             value: max-age=31536000; includeSubDomains; preload
-        headersSize: 1437
+        headersSize: 1538
         httpVersion: HTTP/1.1
         redirectURL: ""
         status: 200
         statusText: OK
-      startedDateTime: 2024-10-17T16:07:41.384Z
-      time: 235
+      startedDateTime: 2024-10-22T19:47:31.687Z
+      time: 362
       timings:
         blocked: -1
         connect: -1
@@ -508,7 +528,7 @@ log:
         receive: 0
         send: 0
         ssl: -1
-        wait: 235
+        wait: 362
     - _id: 9fdf3418a505d251116e020fda591c55
       _order: 0
       cache: {}
@@ -527,7 +547,7 @@ log:
           - name: accept
             value: "*/*"
           - name: user-agent
-            value: vscode/1.38.1 (Node.js v20.16.0)
+            value: vscode/1.38.2 (Node.js v20.16.0)
           - name: content-type
             value: application/json; charset=utf-8
           - name: authorization
@@ -574,7 +594,7 @@ log:
         cookies: []
         headers:
           - name: date
-            value: Thu, 17 Oct 2024 16:07:42 GMT
+            value: Tue, 22 Oct 2024 19:47:32 GMT
           - name: content-type
             value: application/json
           - name: content-length
@@ -587,6 +607,10 @@ log:
             value: ""
           - name: cache-control
             value: no-cache, max-age=0
+          - name: observed-calculated-ip-from-forwarded-for
+            value: 84.234.244.244
+          - name: observed-x-forwarded-for
+            value: 84.234.244.244
           - name: vary
             value: Cookie,Accept-Encoding,Authorization,Cookie, Authorization,
               X-Requested-With,Cookie
@@ -598,13 +622,13 @@ log:
             value: 1; mode=block
           - name: strict-transport-security
             value: max-age=31536000; includeSubDomains; preload
-        headersSize: 1437
+        headersSize: 1538
         httpVersion: HTTP/1.1
         redirectURL: ""
         status: 200
         statusText: OK
-      startedDateTime: 2024-10-17T16:07:41.885Z
-      time: 347
+      startedDateTime: 2024-10-22T19:47:32.440Z
+      time: 403
       timings:
         blocked: -1
         connect: -1
@@ -612,206 +636,7 @@ log:
         receive: 0
         send: 0
         ssl: -1
-        wait: 347
-    - _id: 39fe3efa22c727dff9fd6b923a145b81
-      _order: 0
-      cache: {}
-      request:
-        bodySize: 247
-        cookies: []
-        headers:
-          - name: connection
-            value: close
-          - name: host
-            value: sourcegraph.com
-          - name: accept-encoding
-            value: identity
-          - name: content-length
-            value: "247"
-          - name: accept
-            value: "*/*"
-          - name: user-agent
-            value: vscode/1.38.1 (Node.js v20.16.0)
-          - name: content-type
-            value: application/json; charset=utf-8
-          - name: authorization
-            value: token
-              REDACTED_fc324d3667e841181b0779375f26dedc911d26b303d23b29b1a2d7ee63dc77eb
-          - name: x-mitm-proxy-name
-            value: sourcegraph.dotcom
-          - name: x-mitm-auth-token-name
-            value: sourcegraph.dotcom
-        headersSize: 593
-        httpVersion: HTTP/1.1
-        method: POST
-        postData:
-          mimeType: application/json; charset=utf-8
-          params: []
-          textJSON:
-            query: |
-              
-              query Repositories($names: [String!]!, $first: Int!) {
-                  repositories(names: $names, first: $first) {
-                    nodes {
-                      name
-                      id
-                    }
-                  }
-                }
-            variables:
-              first: 10
-              names:
-                - github.com/sourcegraph/cody
-        queryString:
-          - name: Repositories
-            value: null
-        url: https://sourcegraph.com/.api/graphql?Repositories
-      response:
-        bodySize: 112
-        content:
-          mimeType: application/json
-          size: 112
-          text: "{\"data\":{\"repositories\":{\"nodes\":[{\"name\":\"github.com/sourcegra\
-            ph/cody\",\"id\":\"UmVwb3NpdG9yeTo2MTMyNTMyOA==\"}]}}}"
-        cookies: []
-        headers:
-          - name: date
-            value: Thu, 17 Oct 2024 16:07:42 GMT
-          - name: content-type
-            value: application/json
-          - name: content-length
-            value: "112"
-          - name: connection
-            value: close
-          - name: access-control-allow-credentials
-            value: "true"
-          - name: access-control-allow-origin
-            value: ""
-          - name: cache-control
-            value: no-cache, max-age=0
-          - name: vary
-            value: Cookie,Accept-Encoding,Authorization,Cookie, Authorization,
-              X-Requested-With,Cookie
-          - name: x-content-type-options
-            value: nosniff
-          - name: x-frame-options
-            value: DENY
-          - name: x-xss-protection
-            value: 1; mode=block
-          - name: strict-transport-security
-            value: max-age=31536000; includeSubDomains; preload
-        headersSize: 1437
-        httpVersion: HTTP/1.1
-        redirectURL: ""
-        status: 200
-        statusText: OK
-      startedDateTime: 2024-10-17T16:07:42.401Z
-      time: 240
-      timings:
-        blocked: -1
-        connect: -1
-        dns: -1
-        receive: 0
-        send: 0
-        ssl: -1
-        wait: 240
-    - _id: 8c2fecc53b8bf0331bcb7496e2833fe3
-      _order: 0
-      cache: {}
-      request:
-        bodySize: 247
-        cookies: []
-        headers:
-          - name: connection
-            value: close
-          - name: host
-            value: sourcegraph.com
-          - name: accept-encoding
-            value: identity
-          - name: content-length
-            value: "247"
-          - name: accept
-            value: "*/*"
-          - name: user-agent
-            value: vscode/1.38.1 (Node.js v20.16.0)
-          - name: content-type
-            value: application/json; charset=utf-8
-          - name: x-mitm-proxy-name
-            value: sourcegraph.dotcom
-        headersSize: 465
-        httpVersion: HTTP/1.1
-        method: POST
-        postData:
-          mimeType: application/json; charset=utf-8
-          params: []
-          textJSON:
-            query: |
-              
-              query Repositories($names: [String!]!, $first: Int!) {
-                  repositories(names: $names, first: $first) {
-                    nodes {
-                      name
-                      id
-                    }
-                  }
-                }
-            variables:
-              first: 10
-              names:
-                - github.com/sourcegraph/cody
-        queryString:
-          - name: Repositories
-            value: null
-        url: https://sourcegraph.com/.api/graphql?Repositories
-      response:
-        bodySize: 112
-        content:
-          mimeType: application/json
-          size: 112
-          text: "{\"data\":{\"repositories\":{\"nodes\":[{\"name\":\"github.com/sourcegra\
-            ph/cody\",\"id\":\"UmVwb3NpdG9yeTo2MTMyNTMyOA==\"}]}}}"
-        cookies: []
-        headers:
-          - name: date
-            value: Thu, 17 Oct 2024 16:07:43 GMT
-          - name: content-type
-            value: application/json
-          - name: content-length
-            value: "112"
-          - name: connection
-            value: close
-          - name: access-control-allow-credentials
-            value: "true"
-          - name: access-control-allow-origin
-            value: ""
-          - name: cache-control
-            value: no-cache, max-age=0
-          - name: vary
-            value: Cookie,Accept-Encoding,Authorization,Cookie, Authorization,
-              X-Requested-With,Cookie
-          - name: x-content-type-options
-            value: nosniff
-          - name: x-frame-options
-            value: DENY
-          - name: x-xss-protection
-            value: 1; mode=block
-          - name: strict-transport-security
-            value: max-age=31536000; includeSubDomains; preload
-        headersSize: 1437
-        httpVersion: HTTP/1.1
-        redirectURL: ""
-        status: 200
-        statusText: OK
-      startedDateTime: 2024-10-17T16:07:42.808Z
-      time: 233
-      timings:
-        blocked: -1
-        connect: -1
-        dns: -1
-        receive: 0
-        send: 0
-        ssl: -1
-        wait: 233
+        wait: 403
     - _id: df9bbe44d51a47ebe6840a3b9fba1c29
       _order: 0
       cache: {}
@@ -830,7 +655,7 @@ log:
           - name: accept
             value: "*/*"
           - name: user-agent
-            value: vscode/1.38.1 (Node.js v20.16.0)
+            value: vscode/1.38.2 (Node.js v20.16.0)
           - name: content-type
             value: application/json; charset=utf-8
           - name: x-mitm-proxy-name
@@ -859,12 +684,12 @@ log:
         content:
           mimeType: application/json
           size: 73
-          text: "{\"data\":{\"site\":{\"productVersion\":\"295908_2024-10-17_5.8-bb4c7d4f\
-            356f\"}}}"
+          text: "{\"data\":{\"site\":{\"productVersion\":\"296687_2024-10-22_5.8-352d60d3\
+            1a67\"}}}"
         cookies: []
         headers:
           - name: date
-            value: Thu, 17 Oct 2024 16:07:39 GMT
+            value: Tue, 22 Oct 2024 19:47:28 GMT
           - name: content-type
             value: application/json
           - name: content-length
@@ -877,6 +702,10 @@ log:
             value: ""
           - name: cache-control
             value: no-cache, max-age=0
+          - name: observed-calculated-ip-from-forwarded-for
+            value: 84.234.244.244
+          - name: observed-x-forwarded-for
+            value: 84.234.244.244
           - name: vary
             value: Cookie,Accept-Encoding,Authorization,Cookie, Authorization,
               X-Requested-With,Cookie
@@ -888,13 +717,13 @@ log:
             value: 1; mode=block
           - name: strict-transport-security
             value: max-age=31536000; includeSubDomains; preload
-        headersSize: 1436
+        headersSize: 1537
         httpVersion: HTTP/1.1
         redirectURL: ""
         status: 200
         statusText: OK
-      startedDateTime: 2024-10-17T16:07:38.775Z
-      time: 235
+      startedDateTime: 2024-10-22T19:47:28.051Z
+      time: 349
       timings:
         blocked: -1
         connect: -1
@@ -902,7 +731,7 @@ log:
         receive: 0
         send: 0
         ssl: -1
-        wait: 235
+        wait: 349
     - _id: a4f06f44ac6627e56ffe62ff40b4aaa9
       _order: 0
       cache: {}
@@ -921,7 +750,7 @@ log:
           - name: accept
             value: "*/*"
           - name: user-agent
-            value: vscode/1.38.1 (Node.js v20.16.0)
+            value: vscode/1.38.2 (Node.js v20.16.0)
           - name: content-type
             value: application/json; charset=utf-8
           - name: authorization
@@ -955,12 +784,12 @@ log:
         content:
           mimeType: application/json
           size: 73
-          text: "{\"data\":{\"site\":{\"productVersion\":\"295908_2024-10-17_5.8-bb4c7d4f\
-            356f\"}}}"
+          text: "{\"data\":{\"site\":{\"productVersion\":\"296687_2024-10-22_5.8-352d60d3\
+            1a67\"}}}"
         cookies: []
         headers:
           - name: date
-            value: Thu, 17 Oct 2024 16:07:41 GMT
+            value: Tue, 22 Oct 2024 19:47:32 GMT
           - name: content-type
             value: application/json
           - name: content-length
@@ -973,6 +802,10 @@ log:
             value: ""
           - name: cache-control
             value: no-cache, max-age=0
+          - name: observed-calculated-ip-from-forwarded-for
+            value: 84.234.244.244
+          - name: observed-x-forwarded-for
+            value: 84.234.244.244
           - name: vary
             value: Cookie,Accept-Encoding,Authorization,Cookie, Authorization,
               X-Requested-With,Cookie
@@ -984,13 +817,13 @@ log:
             value: 1; mode=block
           - name: strict-transport-security
             value: max-age=31536000; includeSubDomains; preload
-        headersSize: 1436
+        headersSize: 1537
         httpVersion: HTTP/1.1
         redirectURL: ""
         status: 200
         statusText: OK
-      startedDateTime: 2024-10-17T16:07:41.694Z
-      time: 221
+      startedDateTime: 2024-10-22T19:47:32.270Z
+      time: 256
       timings:
         blocked: -1
         connect: -1
@@ -998,12 +831,12 @@ log:
         receive: 0
         send: 0
         ssl: -1
-        wait: 221
-    - _id: a53e8ae72e4db414a4fa0ee8762dab2f
+        wait: 256
+    - _id: 17cdda983992f1d54910d5c8827cdb03
       _order: 0
       cache: {}
       request:
-        bodySize: 777
+        bodySize: 795
         cookies: []
         headers:
           - name: connection
@@ -1013,11 +846,11 @@ log:
           - name: accept-encoding
             value: identity
           - name: content-length
-            value: "777"
+            value: "795"
           - name: accept
             value: "*/*"
           - name: user-agent
-            value: vscode/1.38.1 (Node.js v20.16.0)
+            value: vscode/1.38.2 (Node.js v20.16.0)
           - name: content-type
             value: application/json; charset=utf-8
           - name: authorization
@@ -1048,6 +881,7 @@ log:
                           description
                           draft
                           autoSubmit
+                          mode
                           definition {
                               text
                           }
@@ -1082,7 +916,7 @@ log:
         cookies: []
         headers:
           - name: date
-            value: Thu, 17 Oct 2024 16:07:42 GMT
+            value: Tue, 22 Oct 2024 19:58:31 GMT
           - name: content-type
             value: application/json
           - name: content-length
@@ -1095,6 +929,10 @@ log:
             value: ""
           - name: cache-control
             value: no-cache, max-age=0
+          - name: observed-calculated-ip-from-forwarded-for
+            value: 84.234.244.244
+          - name: observed-x-forwarded-for
+            value: 84.234.244.244
           - name: vary
             value: Cookie,Accept-Encoding,Authorization,Cookie, Authorization,
               X-Requested-With,Cookie
@@ -1106,13 +944,13 @@ log:
             value: 1; mode=block
           - name: strict-transport-security
             value: max-age=31536000; includeSubDomains; preload
-        headersSize: 1436
+        headersSize: 1537
         httpVersion: HTTP/1.1
         redirectURL: ""
         status: 200
         statusText: OK
-      startedDateTime: 2024-10-17T16:07:42.667Z
-      time: 279
+      startedDateTime: 2024-10-22T19:58:30.871Z
+      time: 349
       timings:
         blocked: -1
         connect: -1
@@ -1120,7 +958,7 @@ log:
         receive: 0
         send: 0
         ssl: -1
-        wait: 279
+        wait: 349
     - _id: 5bf27035df04d471d88a6d6cb52a0dd6
       _order: 0
       cache: {}
@@ -1137,7 +975,7 @@ log:
           - name: accept
             value: "*/*"
           - name: user-agent
-            value: vscode/1.38.1 (Node.js v20.16.0)
+            value: vscode/1.38.2 (Node.js v20.16.0)
           - name: authorization
             value: token
               REDACTED_fc324d3667e841181b0779375f26dedc911d26b303d23b29b1a2d7ee63dc77eb
@@ -1151,10 +989,10 @@ log:
         queryString: []
         url: https://sourcegraph.com/.api/modelconfig/supported-models.json
       response:
-        bodySize: 6133
+        bodySize: 6154
         content:
           mimeType: text/plain; charset=utf-8
-          size: 6133
+          size: 6154
           text: >
             {
                 "schemaVersion": "1.0",
@@ -1183,9 +1021,9 @@ log:
                 ],
                 "models": [
                     {
-                        "modelRef": "anthropic::2023-06-01::claude-3.5-sonnet",
-                        "displayName": "Claude 3.5 Sonnet",
-                        "modelName": "claude-3-5-sonnet-20240620",
+                        "modelRef": "anthropic::2024-10-22::claude-3-5-sonnet-latest",
+                        "displayName": "Claude 3.5 Sonnet (Latest)",
+                        "modelName": "claude-3-5-sonnet-latest",
                         "capabilities": [
                             "edit",
                             "chat",
@@ -1357,7 +1195,7 @@ log:
                     }
                 ],
                 "defaultModels": {
-                    "chat": "anthropic::2023-06-01::claude-3.5-sonnet",
+                    "chat": "anthropic::2024-10-22::claude-3-5-sonnet-latest",
                     "fastChat": "anthropic::2023-06-01::claude-3-haiku",
                     "codeCompletion": "fireworks::v1::deepseek-coder-v2-lite-base"
                 }
@@ -1365,7 +1203,7 @@ log:
         cookies: []
         headers:
           - name: date
-            value: Thu, 17 Oct 2024 16:07:42 GMT
+            value: Tue, 22 Oct 2024 19:47:33 GMT
           - name: content-type
             value: text/plain; charset=utf-8
           - name: transfer-encoding
@@ -1378,6 +1216,10 @@ log:
             value: ""
           - name: cache-control
             value: no-cache, max-age=0
+          - name: observed-calculated-ip-from-forwarded-for
+            value: 84.234.244.244
+          - name: observed-x-forwarded-for
+            value: 84.234.244.244
           - name: vary
             value: Cookie,Accept-Encoding,Authorization,Cookie, Authorization,
               X-Requested-With,Cookie
@@ -1389,13 +1231,13 @@ log:
             value: 1; mode=block
           - name: strict-transport-security
             value: max-age=31536000; includeSubDomains; preload
-        headersSize: 1313
+        headersSize: 1414
         httpVersion: HTTP/1.1
         redirectURL: ""
         status: 200
         statusText: OK
-      startedDateTime: 2024-10-17T16:07:42.354Z
-      time: 214
+      startedDateTime: 2024-10-22T19:47:33.026Z
+      time: 380
       timings:
         blocked: -1
         connect: -1
@@ -1403,6 +1245,6 @@ log:
         receive: 0
         send: 0
         ssl: -1
-        wait: 214
+        wait: 380
   pages: []
   version: "1.2"
