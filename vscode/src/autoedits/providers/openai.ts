@@ -1,9 +1,10 @@
-import { type AutoEditsTokenLimit, logDebug } from '@sourcegraph/cody-shared'
+import type { AutoEditsTokenLimit } from '@sourcegraph/cody-shared'
 import type * as vscode from 'vscode'
 import type {
     AutocompleteContextSnippet,
     DocumentContext,
 } from '../../../../lib/shared/src/completions/types'
+import { autoeditsLogger } from '../logger'
 import type {
     ChatPrompt,
     PromptProvider,
@@ -11,18 +12,20 @@ import type {
     PromptResponseData,
 } from '../prompt-provider'
 import { getModelResponse } from '../prompt-provider'
-import { SYSTEM_PROMPT, getBaseUserPrompt } from '../prompt-utils'
+import { type CodeToReplaceData, SYSTEM_PROMPT, getBaseUserPrompt } from '../prompt-utils'
 
 export class OpenAIPromptProvider implements PromptProvider {
     getPrompt(
         docContext: DocumentContext,
         document: vscode.TextDocument,
+        position: vscode.Position,
         context: AutocompleteContextSnippet[],
         tokenBudget: AutoEditsTokenLimit
     ): PromptResponseData {
         const { codeToReplace, promptResponse: userPrompt } = getBaseUserPrompt(
             docContext,
             document,
+            position,
             context,
             tokenBudget
         )
@@ -42,7 +45,7 @@ export class OpenAIPromptProvider implements PromptProvider {
         }
     }
 
-    postProcessResponse(response: string): string {
+    postProcessResponse(codeToReplace: CodeToReplaceData, response: string): string {
         return response
     }
 
@@ -67,7 +70,7 @@ export class OpenAIPromptProvider implements PromptProvider {
             )
             return response.choices[0].message.content
         } catch (error) {
-            logDebug('AutoEdits', 'Error calling OpenAI API:', error)
+            autoeditsLogger.logDebug('AutoEdits', 'Error calling OpenAI API:', error)
             throw error
         }
     }

@@ -21,11 +21,12 @@ export interface PromptProvider {
     getPrompt(
         docContext: DocumentContext,
         document: vscode.TextDocument,
+        position: vscode.Position,
         context: AutocompleteContextSnippet[],
         tokenBudget: AutoEditsTokenLimit
     ): PromptResponseData
 
-    postProcessResponse(completion: string | null): string
+    postProcessResponse(codeToReplace: utils.CodeToReplaceData, completion: string | null): string
 
     getModelResponse(model: string, apiKey: string, prompt: PromptProviderResponse): Promise<string>
 }
