@@ -595,6 +595,11 @@ interface HighlightLineRange {
     startLine: number
 }
 
+interface VersionInfo {
+    version: string
+    isInsiderBuild: boolean
+}
+
 type GraphQLAPIClientConfig = PickResolvedConfiguration<{
     auth: true
     configuration: 'telemetryLevel' | 'customHeaders'
@@ -621,19 +626,44 @@ export class SourcegraphGraphQLAPIClient {
         return new SourcegraphGraphQLAPIClient(Observable.of(config))
     }
 
-    private constructor(private readonly config: Observable<GraphQLAPIClientConfig>) {}
+    private versionInfo: Promise<VersionInfo | Error> | null = null
+    private lastServerEndpoint?: string
+
+    private constructor(private readonly config: Observable<GraphQLAPIClientConfig>) {
+        // Subscribe to config changes to clear cache when endpoint changes
+        this.config.subscribe(newConfig => {
+            if (this.lastServerEndpoint !== newConfig.auth.serverEndpoint) {
+                this.versionInfo = null // Clear version cache
+                this.lastServerEndpoint = newConfig.auth.serverEndpoint
+            }
+        })
+    }
 
     public async getSiteVersion(signal?: AbortSignal): Promise<string | Error> {
-        return this.fetchSourcegraphAPI<APIResponse<SiteVersionResponse>>(
-            CURRENT_SITE_VERSION_QUERY,
-            {},
-            signal
-        ).then(response =>
-            extractDataOrError(
-                response,
-                data => data.site?.productVersion ?? new Error('site version not found')
+        const versionInfo = await this.getVersionInfo(signal)
+        return isError(versionInfo) ? versionInfo : versionInfo.version
+    }
+
+    private async getVersionInfo(signal?: AbortSignal): Promise<VersionInfo | Error> {
+        if (!this.versionInfo) {
+            this.versionInfo = this.fetchSourcegraphAPI<APIResponse<SiteVersionResponse>>(
+                CURRENT_SITE_VERSION_QUERY,
+                {},
+                signal
+            ).then(response =>
+                extractDataOrError(response, data => {
+                    const version = data.site?.productVersion ?? new Error('site version not found')
+                    if (isError(version)) {
+                        return version
+                    }
+                    return {
+                        version,
+                        isInsiderBuild: version.length > 12 || version.includes('dev'),
+                    }
+                })
             )
-        )
+        }
+        return this.versionInfo
     }
 
     public async getRemoteFiles(
@@ -1014,15 +1044,13 @@ export class SourcegraphGraphQLAPIClient {
         { minimumVersion, insider = true }: { minimumVersion: string; insider?: boolean },
         signal?: AbortSignal
     ): Promise<boolean> {
-        const version = await this.getSiteVersion(signal)
-        if (isError(version)) {
+        const versionInfo = await this.getVersionInfo(signal)
+        if (isError(versionInfo)) {
             return false
         }
         signal?.throwIfAborted()
 
-        const isInsiderBuild = version.length > 12 || version.includes('dev')
-
-        return (insider && isInsiderBuild) || semver.gte(version, minimumVersion)
+        return (insider && versionInfo.isInsiderBuild) || semver.gte(versionInfo.version, minimumVersion)
     }
 
     public async contextSearch({
