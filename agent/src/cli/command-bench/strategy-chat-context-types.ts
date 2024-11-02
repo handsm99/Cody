@@ -8,6 +8,8 @@ import { stringify as yamlStringify } from 'yaml'
 
 export interface ClientOptions {
     rewrite: boolean
+    codeResultsCount: number
+    textResultsCount: number
 }
 
 export interface EvalOutput {
@@ -30,6 +32,7 @@ export interface EvalContextItem {
     startLine: number
     endLine: number
     content?: string
+    retriever?: string
 }
 
 interface RepoRev {
@@ -116,15 +119,8 @@ function exampleFromCsvRecord(record: any): Example {
     }
 }
 
-interface Stats {
-    essentialRecall5: number
-    essentialRecall10: number
-    essentialRecall: number
-}
-
 export interface ExampleOutput extends Example {
     actualContext: EvalContextItem[]
-    stats: Stats
 }
 
 interface IgnoredRecord {
@@ -208,9 +204,6 @@ export async function writeExamplesToCSV(outputFile: string, examples: ExampleOu
             { id: 'langs_optional', title: 'langs_optional' },
             { id: 'source_optional', title: 'source_optional' },
             { id: 'actualContext', title: 'actualContext' },
-            { id: 'stat_eRecall5', title: 'stat_eRecall5' },
-            { id: 'stat_eRecall10', title: 'stat_eRecall10' },
-            { id: 'stat_eRecall', title: 'stat_eRecall' },
         ],
     })
     await csvWriter
@@ -236,10 +229,6 @@ function exampleToCsvRecord(example: ExampleOutput): any {
         source_optional: example.source,
 
         actualContext: example.actualContext.map(contextItemToString).join('\n'),
-
-        stat_eRecall5: example.stats.essentialRecall5,
-        stat_eRecall10: example.stats.essentialRecall10,
-        stat_eRecall: example.stats.essentialRecall,
     }
 }
 
@@ -258,5 +247,5 @@ export function contextItemFromString(item: string): EvalContextItem {
 }
 
 export function contextItemToString(item: EvalContextItem): string {
-    return `${item.repoName}:${item.path}:${item.startLine}-${item.endLine}`
+    return `${item.retriever}:${item.repoName}:${item.path}:${item.startLine}-${item.endLine}`
 }
